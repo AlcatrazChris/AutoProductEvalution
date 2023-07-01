@@ -1,0 +1,10 @@
+beautifulsoup4==4.11.1
+jieba==0.42.1
+pandas==1.5.0
+PyQt5==5.15.9
+PyQt5_sip==12.11.0
+Requests==2.31.0
+torch==2.0.1+cu117
+tqdm==4.65.0
+matplotlib~=3.6.0
+wordcloud~=1.9.2
