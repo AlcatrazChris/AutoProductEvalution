@@ -7,7 +7,7 @@ import pandas as pd
 import re
 import csv
 
-
+#爬虫类
 class Spider:
     def __init__(self, url, timeout):
         super().__init__()
