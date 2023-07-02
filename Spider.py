@@ -14,17 +14,7 @@ class Spider:
         self.url = url
         self.timeout = timeout
         self.header = {
-            'cookie': 'tracknick=tb860049855; thw=cn; lgc=tb860049855; cna=WVQEHWIwCg0CAXBQ6ixYY9x/; sgcookie=E100%2B3prjAksw3pLsXhZ7mrECJwCONEfvMJyzHEdcY1teffGdtQuzM35AO%2FNKAKD%2BiXN91LhufoVCdLhisCfwBVEQCluF6Kq8kRlP6C9ztbzfBw%3D; uc3=lg2=WqG3DMC9VAQiUQ%3D%3D&vt3=F8dCsf5zd84oI1cNQXU%3D&id2=UNcBdBN2nG8GnA%3D%3D&nk2=F5RNY%2BvtLJHakrk%3D; uc4=nk4=0%40FY4GtKBW8F%2B5Ha0pkdqLnRNcAKefkg%3D%3D&id4=0%40UgDH%2B2yGyQEZCIDuZiZIbC8BVXeQ; _cc_=URm48syIZQ%3D%3D; t=90b8f31aa4dd0246fd6b4477ae284cc9; mt=ci=-1_0; _tb_token_=53a81d3e33d37; alitrackid=www.taobao.com; lastalitrackid=www.taobao.com; cookie2=29bfabdb3f55a1f72d6c394feaaa1645; _m_h5_tk=1f6e28687e67701bb00049dbbc122f77_1687107463806; _m_h5_tk_enc=35b47996f5ed9a55deab8b7da0b76728; uc1=cookie14=Uoe8jRoRb1o9Kg%3D%3D; JSESSIONID=B740CCD2468D555592AA890CCA8E886F; l=fBI9UksuNYDR0ZNzBOfZPurza77O_IRYYuPzaNbMi9fPOTCp5ziFW11hfkY9Cn1VFsgHJ3ooemSHBeYBqCvan5U62j-laODmnmOk-Wf..; tfstk=colABJ0Nl3x015xgaSpl7Dr5hg8lZuxTVZZG6jdgK1QNirfOiyln9pV9hPZUDUC..; isg=BMTEstdNfDh8E8i4RAZJbZZ2lUK23ehH8DJtB95lTQ9SCWTTB-gV106jSSHRCiCf',
-    'referer': 'https://www.taobao.com/',
-    'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Microsoft Edge";v="114"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-platform': '"Windows"',
-    'sec-fetch-dest': 'document',
-    'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'same-origin',
-    'sec-fetch-user': '?1',
-    'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.51',
+            #写自己的cookie和header
         }
         self.params = {
             "itemId": "",
@@ -32,9 +22,9 @@ class Spider:
             "currentPage": "1",
             "callback": "jsonp723"
         }
+        self.df = pd.DataFrame()#传递数据用的
 
-        self.df = pd.DataFrame()
-
+    #获取页面
     def get_page(self):
         try:
             page = requests.get(self.url, headers=self.header, timeout=self.timeout)
@@ -47,6 +37,7 @@ class Spider:
             print("获取页面信息失败：", str(err))
             return None
 
+    #接口函数，方便在UI中调用
     def Interface(self, platform):
         page = self.get_page()
         if page is None:
@@ -60,6 +51,7 @@ class Spider:
         except Exception as err:
             return str(err) + '获取失败', None
 
+    #获取评论的接口
     def get_comments(self, platform):
         if platform == 'taobao':
             executor = ThreadPoolExecutor(max_workers=48)
@@ -78,6 +70,7 @@ class Spider:
                 executor.submit(self.jdcomments_crawl, item_id, 5, writer)
             executor.shutdown(wait=True)
 
+    #处理淘宝页面的信息
     def taobao_prase_page(self, page):
         data_list = []
         page_info = re.findall('g_page_config = (.*);', page)[0]
@@ -110,6 +103,7 @@ class Spider:
         print("成功缓存淘宝数据")
         return pd.DataFrame(data_list)
 
+    #处理京东页面的信息
     def jingdong_prase_page(self, page):
         data_list = []
         data = BeautifulSoup(page, 'html.parser')
@@ -160,6 +154,7 @@ class Spider:
         print("成功缓存京东数据")
         return pd.DataFrame(data_list)
 
+    #获取淘宝评论
     def tbcomments_crawl(self, itemId, pages, writer):
         self.header['referer'] = 'https://detail.tmall.com/item.htm?id=' + itemId
         tbcom_url = "https://rate.tmall.com/list_detail_rate.htm"
@@ -188,6 +183,7 @@ class Spider:
                     tmp.append(comment[attri])
                 csv_writer.writerow(tmp)
 
+    #获取京东评论
     def jdcomments_crawl(self, itemId, pages, writer):
         base_url = 'https://club.jd.com/comment/productPageComments.action'
         callback_param = 'fetchJSON_comment98'

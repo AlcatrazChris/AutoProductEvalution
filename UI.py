@@ -15,7 +15,7 @@ import pandas as pd
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
 
-# 四个线程
+# 爬虫线程
 class SpiderThread(QThread):
     signal = pyqtSignal(str, pd.DataFrame)
 
@@ -37,6 +37,7 @@ class SpiderThread(QThread):
         self.evaluator.Interface(self.platform)
 
 
+#评价线程
 class EvalutionThread(QThread):
     signal = pyqtSignal(str, object, int)
 
@@ -63,6 +64,7 @@ class EvalutionThread(QThread):
         self.signal.emit(status, data, 1)
 
 
+#保存数据线程
 class SaveThread(QThread):
     signal = pyqtSignal(str)
 
@@ -90,6 +92,7 @@ class SaveThread(QThread):
             self.signal.emit(e)
 
 
+#从浏览器返回页面线程
 class BackThread(QThread):
     signal = pyqtSignal(str, object, int)
 
